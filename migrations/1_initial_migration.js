@@ -1,15 +1,15 @@
-const banfiCoin = artifacts.require("BanfiCoin.sol")
-const banfiCoinSale = artifacts.require("BanfiCoinSale.sol")
+const ducats = artifacts.require("Ducats.sol")
+const ducatsSale = artifacts.require("DucatsSale.sol")
 
 require("dotenv").config({ path: "../.env" })
 
 module.exports = async function(deployer) {
   const addresses = await web3.eth.getAccounts()
 
-  await deployer.deploy(banfiCoin, process.env.INITIAL_BANFICOINS || 1000)
-  await deployer.deploy(banfiCoinSale, 1, addresses[0], banfiCoin.address)
+  await deployer.deploy(ducats, process.env.INITIAL_DUCATS || 1000)
+  await deployer.deploy(ducatsSale, 1, addresses[0], ducats.address)
 
-  const instance = await banfiCoin.deployed()
+  const instance = await ducats.deployed()
 
-  await instance.transfer(banfiCoinSale.address, process.env.INITIAL_BANFICOINS || 1000)
+  await instance.transfer(ducatsSale.address, process.env.INITIAL_DUCATS || 1000)
 }

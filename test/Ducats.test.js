@@ -1,30 +1,30 @@
-const BanfiCoin = artifacts.require("BanfiCoin.sol")
+const Ducats = artifacts.require("Ducats.sol")
 
 const BN = web3.utils.BN
 
 require("dotenv").config({path: "../.env"})
 
-contract("BanfiCoin Test", async (accounts) => {
+contract("Ducats Test", async (accounts) => {
     const [deployerAccount, recipient] = accounts
 
-    let banfiCoin
+    let ducats
 
     beforeEach(async () => {
-        banfiCoin = await BanfiCoin.new(process.env.INITIAL_BanfiCoinS || 1000000)
+        ducats = await Ducats.new(process.env.INITIAL_DUCATS || 1000000)
     })
     
-    it("all BanfiCoins sould be in my account", async () => {
-        const instance = banfiCoin
+    it("all Ducatss sould be in my account", async () => {
+        const instance = ducats
 
         const totalSupply = await instance.totalSupply()
 
         return assert.equal((await instance.balanceOf(deployerAccount)).toString(), totalSupply.toString())
     })
 
-    it("is possible to send BanfiCoins between accounts", async () => {
+    it("is possible to send Ducatss between accounts", async () => {
         const sendTokens = 1;
 
-        const instance = banfiCoin
+        const instance = ducats
 
         const totalSupply = await instance.totalSupply()
 

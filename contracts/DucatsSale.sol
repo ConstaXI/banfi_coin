@@ -3,7 +3,7 @@ pragma solidity ^0.8.6;
 
 import "./Crowdsale.sol";
 
-contract BanfiCoinSale is Crowdsale {
+contract DucatsSale is Crowdsale {
     constructor(
         uint256 rate,
         address payable wallet,
