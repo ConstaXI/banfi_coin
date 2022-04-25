@@ -1,6 +1,11 @@
 const Ducats = artifacts.require("Ducats.sol")
 
-const BN = web3.utils.BN
+const BN = require("bn.js")
+const { assert } = require("chai")
+
+const chai = require("./setupChai.js")
+
+const expect = chai.expect
 
 require("dotenv").config({path: "../.env"})
 
@@ -13,7 +18,7 @@ contract("Ducats Test", async (accounts) => {
         ducats = await Ducats.new(process.env.INITIAL_DUCATS || 1000000)
     })
     
-    it("all Ducatss sould be in my account", async () => {
+    it("all Ducats should be in my account", async () => {
         const instance = ducats
 
         const totalSupply = await instance.totalSupply()
@@ -21,8 +26,8 @@ contract("Ducats Test", async (accounts) => {
         return assert.equal((await instance.balanceOf(deployerAccount)).toString(), totalSupply.toString())
     })
 
-    it("is possible to send Ducatss between accounts", async () => {
-        const sendTokens = 1;
+    it("should be possible to send Ducats between accounts", async () => {
+        const sendDucats = 5;
 
         const instance = ducats
 
@@ -30,10 +35,20 @@ contract("Ducats Test", async (accounts) => {
 
         assert.equal((await instance.balanceOf(deployerAccount)).toString(), totalSupply.toString())
 
-        await instance.transfer(recipient, sendTokens)
+        await instance.transfer(recipient, sendDucats)
 
-        assert.equal((await instance.balanceOf(deployerAccount)).toString(), totalSupply.sub(new BN(sendTokens)).toString())
+        assert.equal((await instance.balanceOf(deployerAccount)).toString(), totalSupply.sub(new BN(sendDucats)).toString())
 
-        return assert.equal((await instance.balanceOf(recipient)).toString(), new BN(sendTokens).toString())
+        return assert.equal((await instance.balanceOf(recipient)).toString(), new BN(sendDucats).toString())
+    })
+
+    it("should not be possible to send more tokens than available in total", async () => {
+        const instance = ducats
+
+        const balanceOfDeployer = await instance.balanceOf(deployerAccount)
+
+        expect(instance.transfer(recipient, new BN(balanceOfDeployer + 1))).to.eventually.be.rejected
+
+        return assert.equal((await instance.balanceOf(deployerAccount)).toString(), balanceOfDeployer.toString())
     })
 })
