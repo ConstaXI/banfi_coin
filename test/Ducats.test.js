@@ -1,11 +1,11 @@
 const Ducats = artifacts.require("Ducats.sol")
 
 const BN = require("bn.js")
-const { assert } = require("chai")
 
 const chai = require("./setupChai.js")
 
 const expect = chai.expect
+const assert = chai.assert
 
 require("dotenv").config({path: "../.env"})
 
@@ -18,15 +18,21 @@ contract("Ducats Test", async (accounts) => {
         ducats = await Ducats.new(process.env.INITIAL_DUCATS || 1000000)
     })
     
-    it("all Ducats should be in my account", async () => {
+    it("should instantiate smart contract with initial fee of 10%.", async () => {
         const instance = ducats
 
-        const totalSupply = await instance.totalSupply()
-
-        return assert.equal((await instance.balanceOf(deployerAccount)).toString(), totalSupply.toString())
+        return assert.equal((await instance.getFee()).toString(), new BN(10))
     })
 
-    it("should be possible to send Ducats between accounts", async () => {
+    it("should be possible to change fee, if onwer wants to.", async () => {
+        const instance = ducats
+
+        await instance.changeFee(20)
+
+        return assert.equal((await instance.getFee()).toString(), new BN(20))
+    })
+
+    it("should be possible to send Ducats between accounts.", async () => {
         const sendDucats = 5;
 
         const instance = ducats
@@ -42,7 +48,7 @@ contract("Ducats Test", async (accounts) => {
         return assert.equal((await instance.balanceOf(recipient)).toString(), new BN(sendDucats).toString())
     })
 
-    it("should not be possible to send more tokens than available in total", async () => {
+    it("should not be possible to send more tokens than available in total.", async () => {
         const instance = ducats
 
         const balanceOfDeployer = await instance.balanceOf(deployerAccount)
