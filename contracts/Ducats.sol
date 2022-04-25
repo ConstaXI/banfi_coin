@@ -27,7 +27,7 @@ contract Ducats is ERC20, Ownable {
         require(balanceOf(msg.sender) >= amount.add(tax), "You don't have enought money to pay the fee.");
 
         _transfer(msg.sender, to, amount);
-        ducatsFromContract = ducatsFromContract.add(tax);
+        _transfer(msg.sender, address(this), tax);
 
         return true;
     }
