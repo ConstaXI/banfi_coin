@@ -1,9 +1,5 @@
-const ducats = artifacts.require("Ducats.sol")
+const Migrations = artifacts.require("Migrations");
 
-require("dotenv").config({ path: "../.env" })
-
-module.exports = async function(deployer) {
-  const addresses = await web3.eth.getAccounts()
-
-  await deployer.deploy(ducats, process.env.INITIAL_DUCATS)
-}
+module.exports = function(deployer) {
+  deployer.deploy(Migrations);
+};

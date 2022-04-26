@@ -10,20 +10,20 @@ const assert = chai.assert
 require("dotenv").config({path: "../.env"})
 
 contract("Ducats Test", async (accounts) => {
-    const [deployerAccount, account1] = accounts
+    const [deployerAccount] = accounts
 
-    const getContract = async (accountIndex) => {
-        return Ducats.new(process.env.INITIAL_DUCATS, { from: accounts[accountIndex] })
+    const getContract = async (index = 0) => {
+        return Ducats.new(process.env.INITIAL_DUCATS, { from: accounts[index] })
     }
     
     it("should instantiate smart contract with initial fee of 10%.", async () => {
-        const instance = await getContract(0)
+        const instance = await getContract()
 
         return assert.equal((await instance.getFee()).toString(), new BN(10))
     })
 
     it("should be possible to set fee, if onwer wants to.", async () => {
-        const instance = await getContract(0)
+        const instance = await getContract()
 
         await instance.setFee(20)
 
@@ -31,7 +31,7 @@ contract("Ducats Test", async (accounts) => {
     })
 
     it("should not be possible to set fee higher than 100 or lower than 0.", async () => {
-        const instance = await getContract(0)
+        const instance = await getContract()
 
         expect(instance.setFee(-1)).to.eventually.be.rejected
 
@@ -43,7 +43,7 @@ contract("Ducats Test", async (accounts) => {
     it("should be possible to buy ducats.", async () => {
         const ducatsToBuy = 10
 
-        const instance = await getContract(0)
+        const instance = await getContract()
 
         await instance.buy(ducatsToBuy)
 
@@ -51,7 +51,7 @@ contract("Ducats Test", async (accounts) => {
     })
 
     it("should not be possible to buy ducats if maximum supply was reached.", async () => {
-        const instance = await getContract(0)
+        const instance = await getContract()
 
         const ducatsToBuy = new BN(await instance.getMaximum() + 1)
 
@@ -59,7 +59,7 @@ contract("Ducats Test", async (accounts) => {
     })
 
     it("should be possible to transfer ducats between accounts.", async () => {
-        const instance = await getContract(0)
+        const instance = await getContract()
 
         const fee = await instance.getFee()
 

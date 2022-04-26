@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.6;
+pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "./Vip.sol";
+import "./Pausable.sol";
 
-contract Ducats is ERC20, Ownable {
-    uint256 fee;
+contract Ducats is ERC20, Vip, Pausable {
+    uint256 private fee;
     uint256 private maximumSupply;
-    uint private ducatsFromContract;
 
     using SafeMath for uint256;
 
@@ -22,8 +22,8 @@ contract Ducats is ERC20, Ownable {
         _mint(msg.sender, amount);
     }
 
-    function transfer(address to, uint256 amount) public virtual override returns(bool) {
-        uint tax = amount.div(fee);
+    function transfer(address to, uint256 amount) public virtual override isPaused returns(bool) {
+        uint256 tax = amount.div(fee);
         require(balanceOf(msg.sender) >= amount.add(tax), "You don't have enought money to pay the fee.");
 
         _transfer(msg.sender, to, amount);
@@ -32,20 +32,20 @@ contract Ducats is ERC20, Ownable {
         return true;
     }
 
-    function setFee(uint amount) public onlyOwner {
+    function setFee(uint256 amount) public onlyOwner {
         require(amount >= 0 && amount <= 100, "The fee must be a percentage.");
         fee = amount;
     }
 
-    function getFee() public view returns(uint) {
+    function getFee() public view returns(uint256) {
         return fee;
     }
 
-    function setMaximum(uint amount) public onlyOwner {
+    function setMaximum(uint256 amount) public onlyOwner {
         maximumSupply = amount;
     }
 
-    function getMaximum() public view returns(uint) {
+    function getMaximum() public view returns(uint256) {
         return maximumSupply;
     }
 }
