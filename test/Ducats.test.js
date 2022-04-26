@@ -59,7 +59,7 @@ contract("Ducats Test", async (accounts) => {
     })
 
     it("should be possible to transfer ducats between accounts.", async () => {
-        const instance = await getContract()
+        const instance = await getContract(2)
 
         const fee = await instance.getFee()
 

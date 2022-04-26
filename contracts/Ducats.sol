@@ -18,16 +18,32 @@ contract Ducats is ERC20, Vip, Pausable {
     }
 
     function buy(uint256 amount) public {
-        require(totalSupply().add(amount) <= maximumSupply, "Contract reached its maximum supply, cannot mint more coins.");
+        require(
+            totalSupply().add(amount) <= maximumSupply,
+            "Contract reached its maximum supply, cannot mint more coins."
+        );
         _mint(msg.sender, amount);
     }
 
-    function transfer(address to, uint256 amount) public virtual override isPaused returns(bool) {
-        uint256 tax = amount.div(fee);
-        require(balanceOf(msg.sender) >= amount.add(tax), "You don't have enought money to pay the fee.");
+    function transfer(address to, uint256 amount)
+        public
+        virtual
+        override
+        isPaused
+        returns (bool)
+    {
+        if (!_isVip(msg.sender)) {
+            uint256 tax = amount.div(fee);
+
+            require(
+                balanceOf(msg.sender) >= amount.add(tax),
+                "You don't have enought money to pay the fee."
+            );
+
+            _transfer(msg.sender, address(this), tax);
+        }
 
         _transfer(msg.sender, to, amount);
-        _transfer(msg.sender, address(this), tax);
 
         return true;
     }
@@ -37,15 +53,7 @@ contract Ducats is ERC20, Vip, Pausable {
         fee = amount;
     }
 
-    function getFee() public view returns(uint256) {
-        return fee;
-    }
-
     function setMaximum(uint256 amount) public onlyOwner {
         maximumSupply = amount;
-    }
-
-    function getMaximum() public view returns(uint256) {
-        return maximumSupply;
     }
 }
