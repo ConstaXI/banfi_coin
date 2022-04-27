@@ -33,7 +33,7 @@ contract Ducats is ERC20, Vip, Pausable {
         returns (bool)
     {
         if (!_isVip(msg.sender)) {
-            uint256 tax = amount.div(fee);
+            uint256 tax = fee.mul(amount).div(100);
 
             require(
                 balanceOf(msg.sender) >= amount.add(tax),
@@ -48,12 +48,24 @@ contract Ducats is ERC20, Vip, Pausable {
         return true;
     }
 
+    function collectTaxes() public onlyOwner {
+        _transfer(address(this), msg.sender, balanceOf(address(this)));
+    }
+
     function setFee(uint256 amount) public onlyOwner {
         require(amount >= 0 && amount <= 100, "The fee must be a percentage.");
         fee = amount;
     }
 
+    function getFee() public view returns(uint256) {
+        return fee;
+    }
+
     function setMaximum(uint256 amount) public onlyOwner {
         maximumSupply = amount;
+    }
+
+    function getMaximum() public view returns(uint256) {
+        return maximumSupply;
     }
 }
