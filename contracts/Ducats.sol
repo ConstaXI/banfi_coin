@@ -11,7 +11,7 @@ contract Ducats is ERC20, Vip, Pausable {
     uint256 private _maximumSupply;
     uint256 private _donationAmount;
     uint256 private _cooldownTime = 30 days;
-    mapping (address => uint32) private _cooldown;
+    mapping (address => uint256) private _cooldown;
 
     using SafeMath for uint256;
 
