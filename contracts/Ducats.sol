@@ -7,13 +7,14 @@ import "./Vip.sol";
 import "./Pausable.sol";
 
 contract Ducats is ERC20, Vip, Pausable {
-    uint256 private _fee;
+    uint8 private _fee;
     uint256 private _maximumSupply;
     uint256 private _donationAmount;
-    uint256 private _cooldownTime = 30 days;
+    uint32 private _cooldownTime = 30 days;
     mapping (address => uint32) cooldown;
 
     using SafeMath for uint256;
+    using SafeMath for uint8;
 
     constructor(uint256 maximumSupply, uint256 donationAmount) ERC20("Ducats", "DUC") {
         _maximumSupply = maximumSupply;
@@ -21,28 +22,28 @@ contract Ducats is ERC20, Vip, Pausable {
         _fee = 10;
     }
 
-    function buy(uint256 amount) public {
+    modifier willReachMaximumSuppy(uint256 value) {
         require(
-            totalSupply().add(amount) <= _maximumSupply,
+            totalSupply().add(value) <= _maximumSupply,
             "Contract reached its maximum supply, cannot mint more coins."
         );
+        _;
+    }
+
+    function buy(uint256 amount) public willReachMaximumSuppy(amount) {
         _mint(msg.sender, amount);
     }
 
-    function _isReady(address account) internal view returns (bool) {
+    function _isReady(address account) private view returns (bool) {
         return cooldown[account] <= block.timestamp;
     }
 
-    function _triggerCooldown(address account) internal {
+    function _triggerCooldown(address account) private {
         cooldown[account] = uint32(block.timestamp + _cooldownTime);
     }
 
-    function donate() public {
+    function donate() public willReachMaximumSuppy(_donationAmount) {
         require(_isReady(msg.sender), "The cooldown between donations is 30 days.");
-        require(
-            totalSupply().add(_donationAmount) <= _maximumSupply,
-            "Contract reached its maximum supply, cannot mint more coins."
-        );
         _mint(msg.sender, _donationAmount);
         _triggerCooldown(msg.sender);
     }
@@ -74,8 +75,8 @@ contract Ducats is ERC20, Vip, Pausable {
         _transfer(address(this), msg.sender, balanceOf(address(this)));
     }
 
-    function setFee(uint256 amount) public onlyOwner {
-        require(amount >= 0 && amount <= 100, "The fee must be a percentage.");
+    function setFee(uint8 amount) public onlyOwner {
+        require(amount >= 0 && amount <= 100, "The fee must be a number between 0 and 100.");
         _fee = amount;
     }
 
