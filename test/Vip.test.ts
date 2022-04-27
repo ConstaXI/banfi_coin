@@ -14,7 +14,7 @@ contract("Vip Test", async (accounts) => {
     let vipInstance: VipInstance
 
     beforeEach(async () => {
-        ducatsInstance = await Ducats.new(process.env.INITIAL_DUCATS as string)
+        ducatsInstance = await Ducats.new(process.env.INITIAL_DUCATS as string, process.env.DONATION_AMOUNT as string)
         vipInstance = await Vip.new()
     })
 

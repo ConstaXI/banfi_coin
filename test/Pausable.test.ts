@@ -15,7 +15,7 @@ contract("Pausable Test", async (accounts) => {
     let pausableInstance: PausableInstance
 
     beforeEach(async () => {
-        ducatsInstance = await Ducats.new(process.env.INITIAL_DUCATS as string)
+        ducatsInstance = await Ducats.new(process.env.INITIAL_DUCATS as string, process.env.DONATION_AMOUNT as string)
         pausableInstance = await Pausable.new()
     })
 

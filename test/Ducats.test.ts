@@ -13,7 +13,7 @@ contract("Ducats Test", async (accounts) => {
     let instance: DucatsInstance
 
     beforeEach(async () => {
-        instance = await Ducats.new(process.env.INITIAL_DUCATS as string)
+        instance = await Ducats.new(process.env.INITIAL_DUCATS as string, process.env.DONATION_AMOUNT as string)
     })
 
     it("should be possible to set fee, if onwer wants to.", async () => {
@@ -42,6 +42,20 @@ contract("Ducats Test", async (accounts) => {
         const ducatsToBuy = (await instance.getMaximum()).add(new BN(1))
 
         assert.isRejected(instance.buy(ducatsToBuy.add(new BN(1))))
+    })
+
+    it("should be possible to mint coins for free monthly", async () => {
+        await instance.donate()
+
+        assert.equal((await instance.balanceOf(accounts[0])).toString(), process.env.DONATION_AMOUNT)
+    })
+
+    it("should not be possible to mint coins until cooldown ends", async () => {
+        await instance.donate()
+
+        assert.isRejected(instance.donate())
+
+        assert.equal((await instance.balanceOf(accounts[0])).toString(), process.env.DONATION_AMOUNT)
     })
 
     it("should be possible to transfer ducats between accounts.", async () => {

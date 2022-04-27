@@ -7,22 +7,44 @@ import "./Vip.sol";
 import "./Pausable.sol";
 
 contract Ducats is ERC20, Vip, Pausable {
-    uint256 private fee;
-    uint256 private maximumSupply;
+    uint256 private _fee;
+    uint256 private _maximumSupply;
+    uint256 private _donationAmount;
+    uint256 private _cooldownTime = 30 days;
+    mapping (address => uint32) cooldown;
 
     using SafeMath for uint256;
 
-    constructor(uint256 maximum) ERC20("Ducats", "DUC") {
-        maximumSupply = maximum;
-        fee = 10;
+    constructor(uint256 maximumSupply, uint256 donationAmount) ERC20("Ducats", "DUC") {
+        _maximumSupply = maximumSupply;
+        _donationAmount = donationAmount;
+        _fee = 10;
     }
 
     function buy(uint256 amount) public {
         require(
-            totalSupply().add(amount) <= maximumSupply,
+            totalSupply().add(amount) <= _maximumSupply,
             "Contract reached its maximum supply, cannot mint more coins."
         );
         _mint(msg.sender, amount);
+    }
+
+    function _isReady(address account) internal view returns (bool) {
+        return cooldown[account] <= block.timestamp;
+    }
+
+    function _triggerCooldown(address account) internal {
+        cooldown[account] = uint32(block.timestamp + _cooldownTime);
+    }
+
+    function donate() public {
+        require(_isReady(msg.sender), "The cooldown between donations is 30 days.");
+        require(
+            totalSupply().add(_donationAmount) <= _maximumSupply,
+            "Contract reached its maximum supply, cannot mint more coins."
+        );
+        _mint(msg.sender, _donationAmount);
+        _triggerCooldown(msg.sender);
     }
 
     function transfer(address to, uint256 amount)
@@ -33,7 +55,7 @@ contract Ducats is ERC20, Vip, Pausable {
         returns (bool)
     {
         if (!_isVip(msg.sender)) {
-            uint256 tax = fee.mul(amount).div(100);
+            uint256 tax = _fee.mul(amount).div(100);
 
             require(
                 balanceOf(msg.sender) >= amount.add(tax),
@@ -54,18 +76,18 @@ contract Ducats is ERC20, Vip, Pausable {
 
     function setFee(uint256 amount) public onlyOwner {
         require(amount >= 0 && amount <= 100, "The fee must be a percentage.");
-        fee = amount;
+        _fee = amount;
     }
 
     function getFee() public view returns(uint256) {
-        return fee;
+        return _fee;
     }
 
     function setMaximum(uint256 amount) public onlyOwner {
-        maximumSupply = amount;
+        _maximumSupply = amount;
     }
 
     function getMaximum() public view returns(uint256) {
-        return maximumSupply;
+        return _maximumSupply;
     }
 }
