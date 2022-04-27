@@ -11,7 +11,7 @@ contract Ducats is ERC20, Vip, Pausable {
     uint256 private _maximumSupply;
     uint256 private _donationAmount;
     uint32 private _cooldownTime = 30 days;
-    mapping (address => uint32) cooldown;
+    mapping (address => uint32) private _cooldown;
 
     using SafeMath for uint256;
     using SafeMath for uint8;
@@ -35,11 +35,11 @@ contract Ducats is ERC20, Vip, Pausable {
     }
 
     function _isReady(address account) private view returns (bool) {
-        return cooldown[account] <= block.timestamp;
+        return _cooldown[account] <= block.timestamp;
     }
 
     function _triggerCooldown(address account) private {
-        cooldown[account] = uint32(block.timestamp + _cooldownTime);
+        _cooldown[account] = uint32(block.timestamp + _cooldownTime);
     }
 
     function donate() public willReachMaximumSuppy(_donationAmount) {
