@@ -7,14 +7,13 @@ import "./Vip.sol";
 import "./Pausable.sol";
 
 contract Ducats is ERC20, Vip, Pausable {
-    uint8 private _fee;
+    uint256 private _fee;
     uint256 private _maximumSupply;
     uint256 private _donationAmount;
-    uint32 private _cooldownTime = 30 days;
+    uint256 private _cooldownTime = 30 days;
     mapping (address => uint32) private _cooldown;
 
     using SafeMath for uint256;
-    using SafeMath for uint8;
 
     constructor(uint256 maximumSupply, uint256 donationAmount) ERC20("Ducats", "DUC") {
         _maximumSupply = maximumSupply;
@@ -75,7 +74,7 @@ contract Ducats is ERC20, Vip, Pausable {
         _transfer(address(this), msg.sender, balanceOf(address(this)));
     }
 
-    function setFee(uint8 amount) public onlyOwner {
+    function setFee(uint256 amount) public onlyOwner {
         require(amount >= 0 && amount <= 100, "The fee must be a number between 0 and 100.");
         _fee = amount;
     }
