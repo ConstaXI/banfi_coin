@@ -105,3 +105,14 @@ dist
 
 # Compiled Contracts
 client
+
+# truffle
+build
+artifacts
+
+# typechain
+types
+
+# buidler
+artifacts
+cache
