@@ -7,5 +7,11 @@ require("dotenv").config({ path: "../.env" })
 module.exports = async function(deployer) {
   await deployer.deploy(vip)
   await deployer.deploy(pausable)
-  await deployer.deploy(ducats, process.env.INITIAL_DUCATS, process.env.INITIAL_DUCATS)
+  await deployer.deploy(
+    ducats,
+    process.env.INITIAL_DUCATS, 
+    process.env.DONATION_AMOUNT,
+    process.env.RATE, 
+    process.env.FEE
+)
 }

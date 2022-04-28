@@ -2,6 +2,7 @@ import { DucatsInstance } from '../types/truffle-contracts/Ducats';
 import { PausableInstance } from '../types/truffle-contracts/Pausable';
 import chai from "./setupChai";
 import dotenv from "dotenv"
+import BN from 'bn.js';
 
 const Ducats = artifacts.require("Ducats")
 const Pausable = artifacts.require("Pausable")
@@ -15,12 +16,17 @@ contract("Pausable Test", async (accounts) => {
     let pausableInstance: PausableInstance
 
     beforeEach(async () => {
-        ducatsInstance = await Ducats.new(process.env.INITIAL_DUCATS as string, process.env.DONATION_AMOUNT as string)
+        ducatsInstance = await Ducats.new(            
+            process.env.INITIAL_DUCATS as string, 
+            process.env.DONATION_AMOUNT as string,
+            process.env.RATE as string, 
+            process.env.FEE as string
+        )
         pausableInstance = await Pausable.new()
     })
 
     it("Should be possible to change pause state.", async () => {
-        await ducatsInstance.buy(20)
+        await ducatsInstance.buy({ value: new BN("1000000000000000000") })
 
         await pausableInstance.changePause(true)
 

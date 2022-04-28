@@ -6,9 +6,11 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./Vip.sol";
 import "./Pausable.sol";
 
+// TODO: change vip to instance instead of inhiritable
 contract Ducats is ERC20, Vip, Pausable {
     uint256 private _fee;
     uint256 private _maximumSupply;
+    uint256 private _rate;
     uint256 private _donationAmount;
     uint256 private _cooldownTime = 30 days;
     mapping (address => uint256) private _cooldown;
@@ -23,10 +25,21 @@ contract Ducats is ERC20, Vip, Pausable {
 
     using SafeMath for uint256;
 
-    constructor(uint256 maximumSupply, uint256 donationAmount) ERC20("Ducats", "DUC") {
+    /**
+     * @dev Set the values of _maximumSupply, donationAmount, rate and fee.
+     *
+     * donationAmount - how much user will get with donate function
+     * maximumSupply - how many coins can be generated
+     * rate - how many ducats user will receive per wei
+     * fee - how much the contract will receive from taxes, must be a percentage
+     * 
+     */
+    constructor(uint256 maximumSupply, uint256 donationAmount, uint256 rate, uint256 fee) ERC20("Ducats", "DUC") {
         _maximumSupply = maximumSupply;
         _donationAmount = donationAmount;
-        _fee = 10;
+        require(fee >= 0 && fee <= 100, "The fee must be a number between 0 and 100.");
+        _fee = fee;
+        _rate = rate;
     }
 
     modifier willReachMaximumSuppy(uint256 value) {
@@ -37,8 +50,10 @@ contract Ducats is ERC20, Vip, Pausable {
         _;
     }
 
-    function buy(uint256 amount) public willReachMaximumSuppy(amount) {
-        _mint(msg.sender, amount);
+    function buy() public payable willReachMaximumSuppy(_rate.mul(msg.value)) {
+        require(msg.value >= _rate, "The amount is not higher than minimum.");
+
+        _mint(msg.sender, _rate.mul(msg.value));
     }
 
     function _isReady(address account) private view returns (bool) {
@@ -55,6 +70,7 @@ contract Ducats is ERC20, Vip, Pausable {
         _triggerCooldown(msg.sender);
     }
 
+    // TODO: verify assembly
     function transfer(address to, uint256 amount)
         public
         virtual

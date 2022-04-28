@@ -12,14 +12,25 @@ const assert = chai.assert
 contract("Ducats Test", async (accounts) => {
     let instance: DucatsInstance
 
+    const oneEther = new BN("1000000000000000000")
+    const rate = new BN(process.env.RATE as string)
+    const fee = new BN(process.env.FEE as string)
+
     beforeEach(async () => {
-        instance = await Ducats.new(process.env.INITIAL_DUCATS as string, process.env.DONATION_AMOUNT as string)
+        instance = await Ducats.new(
+            process.env.INITIAL_DUCATS as string,
+            process.env.DONATION_AMOUNT as string,
+            process.env.RATE as string,
+            process.env.FEE as string
+        )
     })
 
     it("should be possible to set fee, if onwer wants to.", async () => {
-        await instance.setFee(20)
+        const newFee = 25
 
-        assert.equal((await instance.getFee()).toString(), "20")
+        await instance.setFee(25)
+
+        assert.equal((await instance.getFee()).toString(), newFee.toString())
     })
 
     it("should not be possible to set fee higher than 100 or lower than 0.", async () => {
@@ -27,21 +38,19 @@ contract("Ducats Test", async (accounts) => {
 
         assert.isRejected(instance.setFee(101))
 
-        assert.equal((await instance.getFee()).toString(), "10")
+        assert.equal((await instance.getFee()).toString(), fee.toString())
     })
 
     it("should be possible to buy ducats.", async () => {
-        const ducatsToBuy = 10
+        await instance.buy({ value: oneEther })
 
-        await instance.buy(ducatsToBuy)
-
-        assert.equal((await instance.balanceOf(accounts[0])).toString(), ducatsToBuy.toString())
+        assert.equal((await instance.balanceOf(accounts[0])).toString(), oneEther.mul(rate).toString())
     })
 
     it("should not be possible to buy ducats if maximum supply was reached.", async () => {
         const ducatsToBuy = (await instance.getMaximum()).add(new BN(1))
 
-        assert.isRejected(instance.buy(ducatsToBuy.add(new BN(1))))
+        assert.isRejected(instance.buy({ value: ducatsToBuy.add(new BN(1)) }))
     })
 
     it("should be possible to mint coins for free monthly", async () => {
@@ -59,21 +68,21 @@ contract("Ducats Test", async (accounts) => {
     })
 
     it("should be possible to transfer ducats between accounts.", async () => {
-        const ducatsToTransfer = 100
+        const ducatsToTransfer = oneEther.div(new BN(100))
 
-        await instance.buy(110, { from: accounts[1] })
+        await instance.buy({ from: accounts[1], value: oneEther })
 
         await instance.transfer(accounts[2], ducatsToTransfer, { from: accounts[1] })
 
         assert.equal((await instance.balanceOf(accounts[2])).toString(), ducatsToTransfer.toString())
 
-        assert.equal((await instance.balanceOf(accounts[1])).toString(), "0")
+        assert.equal((await instance.balanceOf(accounts[1])).toString(), oneEther.mul(rate).sub(ducatsToTransfer).sub(fee.mul(ducatsToTransfer).div(new BN(100))).toString())
     })
 
     it("should be possible to see array of transferences.", async () => {
         const ducatsToTransfer = 100
 
-        await instance.buy(110, { from: accounts[1] })
+        await instance.buy({ from: accounts[1], value: oneEther })
 
         await instance.transfer(accounts[2], ducatsToTransfer, { from: accounts[1] })
 
@@ -91,18 +100,16 @@ contract("Ducats Test", async (accounts) => {
     })
 
     it("should be possible to collect taxes.", async () => {
-        const fee = 10
-
         const ducatsToTransfer = 100
 
-        await instance.buy(100000, { from: accounts[1] })
+        await instance.buy({ from: accounts[1], value: oneEther })
 
         await instance.transfer(accounts[2], ducatsToTransfer, { from: accounts[1] })
 
-        assert.equal((await instance.balanceOf(instance.address)).toString(), (ducatsToTransfer * fee / 100).toString())
+        assert.equal((await instance.balanceOf(instance.address)).toString(), (ducatsToTransfer * fee.toNumber() / 100).toString())
 
         await instance.collectTaxes({ from: accounts[0] })
 
-        assert.equal((await instance.balanceOf(accounts[0])).toString(), (ducatsToTransfer * fee / 100).toString())
+        assert.equal((await instance.balanceOf(accounts[0])).toString(), (ducatsToTransfer * fee.toNumber() / 100).toString())
     })
 })

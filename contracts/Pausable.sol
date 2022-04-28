@@ -3,6 +3,7 @@ pragma solidity ^0.8.13;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+// TODO: change to Config contract and migrate supply to it
 contract Pausable is Ownable {
     bool paused;
 
@@ -15,7 +16,7 @@ contract Pausable is Ownable {
         _;
     }
 
-    function changePause(bool pause) public onlyOwner {
-        paused = pause;
+    function changePause(bool status) public onlyOwner {
+        paused = status;
     }
 }

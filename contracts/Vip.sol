@@ -14,7 +14,8 @@ contract Vip is Ownable {
         return vips[target];
     }
 
-    function setVip(address target) public {
+    // TODO: remove vip too
+    function setVip(address target) public onlyOwner {
         vips[target] = true;
     }
 }
