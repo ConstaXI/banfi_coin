@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "./Vip.sol";
 import "./Pausable.sol";
 
-// TODO: change vip to instance instead of inhiritable
 contract Ducats is ERC20, Vip, Pausable {
     uint256 private _fee;
     uint256 private _maximumSupply;
@@ -70,7 +69,6 @@ contract Ducats is ERC20, Vip, Pausable {
         _triggerCooldown(msg.sender);
     }
 
-    // TODO: verify assembly
     function transfer(address to, uint256 amount)
         public
         virtual
