@@ -70,6 +70,26 @@ contract("Ducats Test", async (accounts) => {
         assert.equal((await instance.balanceOf(accounts[1])).toString(), "0")
     })
 
+    it("should be possible to see array of transferences.", async () => {
+        const ducatsToTransfer = 100
+
+        await instance.buy(110, { from: accounts[1] })
+
+        await instance.transfer(accounts[2], ducatsToTransfer, { from: accounts[1] })
+
+        const transactions = await instance.getTransactions()
+
+        assert.isArray(transactions)
+
+        assert.equal(transactions.length, 1)
+
+        assert.equal(transactions[0].amount.toString(), "100")
+
+        assert.equal(transactions[0].from, accounts[1])
+
+        assert.equal(transactions[0].to, accounts[2])
+    })
+
     it("should be possible to collect taxes.", async () => {
         const fee = 10
 

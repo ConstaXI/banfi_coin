@@ -13,6 +13,14 @@ contract Ducats is ERC20, Vip, Pausable {
     uint256 private _cooldownTime = 30 days;
     mapping (address => uint256) private _cooldown;
 
+    struct TTransactions {
+        address from;
+        address to;
+        uint256 amount;
+    }
+
+    TTransactions[] private _transactions;
+
     using SafeMath for uint256;
 
     constructor(uint256 maximumSupply, uint256 donationAmount) ERC20("Ducats", "DUC") {
@@ -66,8 +74,13 @@ contract Ducats is ERC20, Vip, Pausable {
         }
 
         _transfer(msg.sender, to, amount);
+        _transactions.push(TTransactions(msg.sender, to, amount));
 
         return true;
+    }
+
+    function getTransactions() public view returns(TTransactions[] memory) {
+        return _transactions;
     }
 
     function collectTaxes() public onlyOwner {
